@@ -1,0 +1,44 @@
+let closer = document.querySelector('#closer');
+
+closer.onclick = () => {
+    closer.style.display = 'none';
+    cart.classList.remove('active');
+    wish.classList.remove('active');
+}
+
+let wish = document.querySelector('.wish-cart');
+document.querySelector('#wish-btn').onclick = () => { 
+    closer.style.display = "block";
+    wish.classList.toggle('active');
+}
+
+let cart = document.querySelector('.shopping-cart');
+document.querySelector('#cart-btn').onclick = () => { 
+    closer.style.display = "block";
+    cart.classList.toggle('active');
+}
+
+
+let searchForm = document.querySelector('.header .search-form');
+document.querySelector('#search-btn').onclick = () => {
+    searchForm.classList.toggle('active');
+}
+
+window.onscroll = () => {
+    searchForm.classList.remove('active');
+}
+
+let slides = document.querySelectorAll('.home .slides-container .slide');
+let index = 0;
+
+function next(){
+    slides[index].classList.remove('active');
+    index = (index + 1) % slides.length;
+    slides[index].classList.add('active');
+}
+
+function prev(){
+    slides[index].classList.remove('active');
+    index = (index - 1 + slides.length) % slides.length;
+    slides[index].classList.add('active');
+}

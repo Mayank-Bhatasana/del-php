@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .error-list { margin: 0; padding: 0; }
+        .error-list li { list-style-type: none; }
+        .was-validated input:invalid { border-color: #dc3545; }
+        .was-validated input:valid { border-color: #28a745; }
+        #productsTable { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#productDialog">
+                Add New Product
+            </button>
+            
+            <!-- Products Table -->
+            <table class="table table-bordered table-striped" id="productsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Product ID</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    <!-- Table rows will be added here -->
+                </tbody>
+            </table>
+            <div id="noProducts" class="alert alert-info">No products added yet.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="productDialog" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="formErrors" class="alert alert-danger d-none">
+                    <ul class="error-list mb-0"></ul>
+                </div>
+                <form id="addProductForm" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" class="form-control" id="newProductName" name="productName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Product ID</label>
+                        <input type="text" class="form-control" id="newProductId" name="productId">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="newProductQuantity" name="productQuantity">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" class="form-control" id="newProductPrice" name="productPrice" step="0.01">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="addProductForm" class="btn btn-primary">Save Product</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    const productsTable = $('#productsTable');
+    const noProducts = $('#noProducts');
+
+    // Initialize form validation
+    $('#addProductForm').validate({
+        rules: {
+            productName: { required: true },
+            productId: { required: true },
+            productQuantity: { 
+                required: true,
+                number: true,
+                min: 1
+            },
+            productPrice: { 
+                required: true,
+                number: true,
+                min: 0.01
+            }
+        },
+        messages: {
+            productName: "Please enter product name",
+            productId: "Please enter product ID",
+            productQuantity: {
+                required: "Please enter quantity",
+                number: "Please enter a valid number",
+                min: "Quantity must be at least 1"
+            },
+            productPrice: {
+                required: "Please enter price",
+                number: "Please enter a valid price",
+                min: "Price must be greater than 0"
+            }
+        },
+        errorPlacement: function() {},
+        invalidHandler: function(event, validator) {
+            const errorContainer = $('#formErrors');
+            const errorList = errorContainer.find('ul');
+            errorList.empty();
+            $.each(validator.errorList, function(index, error) {
+                errorList.append(`<li>${error.message}</li>`);
+            });
+            errorContainer.removeClass('d-none');
+        },
+        submitHandler: function(form) {
+            // Get form values
+            const productName = $('#newProductName').val();
+            const productId = $('#newProductId').val();
+            const quantity = $('#newProductQuantity').val();
+            const price = parseFloat($('#newProductPrice').val()).toFixed(2);
+
+            // Add to table
+            const newRow = `
+                <tr>
+                    <td>${productName}</td>
+                    <td>${productId}</td>
+                    <td>${quantity}</td>
+                    <td>$${price}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                    </td>
+                </tr>
+            `;
+            
+            $('#productTableBody').append(newRow);
+            
+            // Show table and hide "no products" message
+            productsTable.show();
+            noProducts.hide();
+
+            // Clear form and close modal
+            $('#formErrors').addClass('d-none');
+            $('#productDialog').modal('hide');
+            form.reset();
+        }
+    });
+
+    // Delete product row
+    $('#productTableBody').on('click', '.delete-btn', function() {
+        $(this).closest('tr').remove();
+        if($('#productTableBody tr').length === 0) {
+            productsTable.hide();
+            noProducts.show();
+        }
+    });
+
+    // Reset form when modal closes
+    $('#productDialog').on('hidden.bs.modal', function() {
+        $('#addProductForm').trigger('reset');
+        $('#formErrors').addClass('d-none');
+        $('#addProductForm').validate().resetForm();
+    });
+});
+</script>
+
+</body>
+</html>
